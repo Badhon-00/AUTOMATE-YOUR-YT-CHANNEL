@@ -1,0 +1,14 @@
+{
+  "tracks": [
+    {
+      "file": "licensed-track.wav",
+      "rights_holder": "Replace with rights holder",
+      "license_name": "Replace with license or written permission reference",
+      "permission_evidence": "Secure evidence reference; do not publish private documents",
+      "commercial_use": true,
+      "derivative_works": true,
+      "attribution_required": false,
+      "notes": "Example only. Verify actual license terms before processing."
+    }
+  ]
+}

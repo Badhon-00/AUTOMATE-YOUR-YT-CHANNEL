@@ -1,0 +1,103 @@
+{
+  "name": "YT Music - Request and Rights Gate",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/api/v1/requests",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "music-request-webhook",
+      "name": "Music Request Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        240,
+        300
+      ],
+      "webhookId": "replace-after-import"
+    },
+    {
+      "parameters": {
+        "jsCode": "const b=$input.first().json.body ?? $input.first().json;\nif(!b.requestId || !b.description || b.rightsConfirmed!==true) throw new Error('requestId, description and rightsConfirmed=true are required.');\nif(typeof b.description!=='string' || b.description.length>2000) throw new Error('Invalid description.');\nreturn [{json:{requestId:String(b.requestId),description:b.description,trackNames:Array.isArray(b.trackNames)?b.trackNames:[],style:b.style??'slowed-reverb',rightsConfirmed:true,requestedAt:new Date().toISOString()}}];"
+      },
+      "id": "validate-music-request",
+      "name": "Validate Request and Rights",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.API_BASE_URL + '/api/v1/requests'}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-workflow-secret",
+              "value": "={{$env.N8N_WEBHOOK_SECRET}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{$json}}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "create-music-request",
+      "name": "Create Application Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        740,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Music Request Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate Request and Rights",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Request and Rights": {
+      "main": [
+        [
+          {
+            "node": "Create Application Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Dhaka"
+  },
+  "pinData": {},
+  "versionId": "1",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "youtube-music-manager"
+    }
+  ]
+}
